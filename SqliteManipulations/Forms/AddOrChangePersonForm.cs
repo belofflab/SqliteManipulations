@@ -32,6 +32,7 @@ namespace SqliteManipulations.Forms
             textBoxFlat.Text = person.Flat.ToString();
             textBoxHouse.Text = person.House.ToString();
             textBoxClass.Text = person.Class;
+            comboBoxGroup.Text = person.UGroup.ToString();
             comboBoxGroup.SelectedItem = person.UGroup;
             textBoxEye.Text = person.EyeColor;
             richTextBoxHobby.Text = person.Hobby;
@@ -53,7 +54,7 @@ namespace SqliteManipulations.Forms
             if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) ||
                 string.IsNullOrWhiteSpace(street) || string.IsNullOrWhiteSpace(flat) ||
                 string.IsNullOrWhiteSpace(house) || string.IsNullOrWhiteSpace(personClass) ||
-                string.IsNullOrWhiteSpace(eyeColor) || string.IsNullOrWhiteSpace(hobby))
+                string.IsNullOrWhiteSpace(hobby))
             {
                 MessageBox.Show("Вы не до конца заполнили информацию!");
                 return;

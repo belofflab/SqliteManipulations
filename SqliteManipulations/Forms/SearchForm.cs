@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SQLite;
 using System.Windows.Forms;
 using SqliteManipulations.Models;
 
@@ -30,34 +25,73 @@ namespace SqliteManipulations.Forms
                 switch (s)
                 {
                     case "hobbynull":
-                        peoples = databaseConnection.getPeoplesHasNoHobby();
+                        peoples = databaseConnection.GetPeople("SELECT * FROM Person WHERE Hobby = ''");
                         break;
                     case "ft12":
-                        peoples = databaseConnection.getPeoplesFlatNumberThen12();
+                        peoples = databaseConnection.GetPeople("SELECT * FROM Person WHERE Flat < 12");
                         break;
                     case "ht50":
-                        peoples = databaseConnection.getPeoplesHouseNumberThen50();
+                        peoples = databaseConnection.GetPeople("SELECT * FROM Person WHERE House < 50");
                         break;
                     case "pushkina":
-                        peoples = databaseConnection.getPeoplesPushkina();
+                        peoples = databaseConnection.GetPeople(
+                        "SELECT* FROM Person WHERE Street = @Street", 
+                        new SQLiteParameter[]
+                            {
+                                new SQLiteParameter("@Street", "Пушкина")
+                            }
+                        );
                         break;
                     case "nothathlete":
-                        peoples = databaseConnection.getPeoplesHardAdthlete();
+                        peoples = databaseConnection.GetPeople(
+                            "SELECT * FROM Person WHERE Hobby != @Hobby",
+                            new SQLiteParameter[]
+                                {
+                                    new SQLiteParameter("@Hobby", "Тяжелая+атлетика")
+                                }
+                            );
                         break;
                     case "firstname":
-                        peoples = databaseConnection.getPeoplesByFirstname(textBoxLastname.Text);
+                        peoples = databaseConnection.GetPeople(
+                            "SELECT * FROM Person WHERE Firstname = @Firstname",
+                            new SQLiteParameter[]
+                                {
+                                    new SQLiteParameter("@Firstname", searchBox.Text)
+                                }
+                            );
                         break;
                     case "lastname":
-                        peoples = databaseConnection.getPeoplesByLastname(textBoxLastname.Text);
+                        peoples = databaseConnection.GetPeople(
+                            "SELECT * FROM Person WHERE Lastname = @Lastname",
+                            new SQLiteParameter[]
+                                {
+                                    new SQLiteParameter("@Lastname", searchBox.Text)
+                                }
+                            );
                         break;
                     case "dob":
-                        peoples = databaseConnection.getPeoplesByDob(textBoxLastname.Text);
+                        DateTime parsedDateStart = new DateTime(int.Parse(searchBox.Text), 1, 1);
+                        DateTime parsedDateEnd = new DateTime(int.Parse(searchBox.Text), 12, 31);
+                        peoples = databaseConnection.GetPeople(
+                            "SELECT * FROM Person WHERE DateOfBirth >= @DateStart AND DateOfBirth <= @DateEnd",
+                            new SQLiteParameter[]
+                                {
+                                    new SQLiteParameter("@DateStart", parsedDateStart),
+                                    new SQLiteParameter("@DateEnd", parsedDateEnd)
+                                }
+                            );
                         break;
                     case "dobnow":
-                        peoples = databaseConnection.getPeoplesByDobNow(DateTime.Now);
+                        peoples = databaseConnection.GetPeople(
+                            "SELECT * FROM Person WHERE strftime('%m-%d', DateOfBirth) = @CurrentDate",
+                            new SQLiteParameter[]
+                                {
+                                    new SQLiteParameter("@CurrentDate", DateTime.Now.ToString("MM-dd")),
+                                }
+                            );
                         break;
                     case "maleName":
-                        peoples = databaseConnection.getPeoplesByMale();
+                        peoples = databaseConnection.GetPeople("SELECT * FROM Person WHERE Sex = true");
                         break;
                 }
                 dataGridViewPersons.DataSource = peoples;

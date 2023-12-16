@@ -12,21 +12,22 @@ namespace SqliteManipulations
     {
         private readonly string connectionString;
         public readonly string databasePath;
-        //Суханов Сергей 16.02.2001 Чердынская 23 74 10 основная Тяжелая атлетика
-        //Пирогов Юрий 5.12. 2003 Куйбышева 6 31 8 основная Футбол
-        //Лебедева Света 16.06. 2005 Пушкина 37 65 6 специальная Вязание
-        //Голдобин Сергей 23.05. 2008 Леонова 12 10 3 основная
-        //Лыжи Ельшина Наташа 4.05. 2002 Чердынская 37 48 9 специальная Чтение
-        //Суханова Наташа 20.12. 2006 Ленина 12 22 5 подготовительная Шитье
-        //Петрова Света 02.04. 2002 Пушкина 37 3 9 основная Лыжи
-        //Горина Оля 20.12. 2004 Свиязева 66 99 7 подготовительная Аэробика
-        //Попов Михаил 7.05. 2007 Леонова 72 6 4 подготовительная
-        //Сергеев Саша 30.11. 2009 Куйбышева 3 31 2 основная Каратэ
-        //Павлова Елена 13.12. 2005 Пушкина 5 6 6 основная Аэробика
-        //Емельянова Наташа 25.05. 2001 Попова 40 47 10 основная
-        //Шитье Евдокимов Михаил 18.08. 2004 Чердынская 3 40 7 основная Футбол
-        //Евсеева Елена 14.10. 2002 Ленина 14 82 9 основная
-        //Суханова Света 29.07. 2000 Куйбышева 37 32 11 основная Аэробика
+        // Sex Lastname Firstname DOB Street House Flat class UGroup Hobby 
+        // true Суханов Сергей 16.02.2001 Чердынская 23 74 10 основная Тяжелая+атлетика
+        // true Пирогов Юрий 5.12.2003 Куйбышева 6 31 8 основная Футбол
+        // false Лебедева Света 16.06.2005 Пушкина 37 65 6 специальная Вязание
+        // true Голдобин Сергей 23.05.2008 Леонова 12 10 3 основная
+        // false Лыжи Ельшина Наташа 4.05.2002 Чердынская 37 48 9 специальная Чтение
+        // false Суханова Наташа 20.12.2006 Ленина 12 22 5 подготовительная Шитье
+        // false Петрова Света 02.04.2002 Пушкина 37 3 9 основная Лыжи
+        // false Горина Оля 20.12.2004 Свиязева 66 99 7 подготовительная Аэробика
+        // true Попов Михаил 7.05.2007 Леонова 72 6 4 подготовительная
+        // true Сергеев Саша 30.11.2009 Куйбышева 3 31 2 основная Каратэ
+        // false Павлова Елена 13.12.2005 Пушкина 5 6 6 основная Аэробика
+        // false Емельянова Наташа 25.05.2001 Попова 40 47 10 основная
+        // true Шитье Евдокимов Михаил 18.08.2004 Чердынская 3 40 7 основная Футбол
+        // false Евсеева Елена 14.10.2002 Ленина 14 82 9 основная
+        // false Суханова Света 29.07.2000 Куйбышева 37 32 11 основная Аэробика
         public DatabaseConnection(string relativePath)
         {
             string projectDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -184,24 +185,25 @@ namespace SqliteManipulations
             using (SQLiteCommand command = new SQLiteCommand($"SELECT COUNT(*) FROM Person WHERE Id = {personId}", connection))
             {
                 connection.Open();
-                int count = Convert.ToInt32(command.ExecuteScalar());
-                return count > 0;
+                return Convert.ToInt32(command.ExecuteScalar()) > 0;
             }
         }
 
-        public List<Person> getPeoplesByFirstname(string personFirstname)
+        public List<Person> GetPeople(string commandText = "SELECT * FROM Person", SQLiteParameter[] sQLiteParameters = null)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Firstname = @Firstname", connection))
+            using (SQLiteCommand command = new SQLiteCommand(commandText, connection))
             {
                 connection.Open();
-                command.Parameters.AddWithValue("@Firstname", personFirstname);
-                List<Person> people = new List<Person>();
+                if (sQLiteParameters != null) {
+                    command.Parameters.AddRange(sQLiteParameters);
+                }
+                List<Person> People = new List<Person>();
                 using (SQLiteDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        people.Add(new Person
+                        People.Add(new Person
                         {
                             Id = reader.GetInt32(0),
                             LastName = reader.GetString(1),
@@ -219,374 +221,8 @@ namespace SqliteManipulations
                     }
 
                 }
-                return people;
+                return People;
             }
-        }
-        public List<Person> getPeoplesByLastname(string personLastname)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Lastname = @Lastname", connection))
-            {
-                connection.Open();
-                command.Parameters.AddWithValue("@Lastname", personLastname);
-                List<Person> people = new List<Person>();
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesByDob(string Year)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE DateOfBirth >= @DateStart AND DateOfBirth <= @DateEnd", connection))
-            {
-                connection.Open();
-                DateTime parsedDateStart = new DateTime(int.Parse(Year), 1, 1);
-                DateTime parsedDateEnd = new DateTime(int.Parse(Year), 12, 31);
-                command.Parameters.AddWithValue("@DateStart", parsedDateStart);
-                command.Parameters.AddWithValue("@DateEnd", parsedDateEnd);
-                List<Person> people = new List<Person>();
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesByDobNow(DateTime dateTime)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE strftime('%m-%d', DateOfBirth) = @CurrentDate", connection))
-            {
-                connection.Open();
-                command.Parameters.AddWithValue("@CurrentDate", dateTime.ToString("MM-dd"));
-                List<Person> people = new List<Person>();
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesByMale()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Sex = true", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesPushkina()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Street = @Street", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                command.Parameters.AddWithValue("@Street", "Пушкина");
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesHardAdthlete()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Hobby != @Hobby", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                command.Parameters.AddWithValue("@Hobby", "Тяжелая+атлетика");
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesHouseNumberThen50()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE House < 50", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                command.Parameters.AddWithValue("@Hobby", "Тяжелая+атлетика");
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-        public List<Person> getPeoplesFlatNumberThen12()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Flat < 12", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                command.Parameters.AddWithValue("@Hobby", "Тяжелая+атлетика");
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-
-        public List<Person> getPeoplesHasNoHobby()
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Hobby = ''", connection))
-            {
-                connection.Open();
-                List<Person> people = new List<Person>();
-                command.Parameters.AddWithValue("@Hobby", "Тяжелая+атлетика");
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-
-                }
-                return people;
-            }
-        }
-
-        public Person getPerson(int personId)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Person WHERE Id = @PersonId", connection))
-            {
-                connection.Open();
-                command.Parameters.AddWithValue("@PersonId", personId);
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        return new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        };
-                    }
-                }
-                return null;
-            }
-        }
-
-
-        public List<Person> GetPeoples()
-        {
-            List<Person> people = new List<Person>();
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM Person", connection))
-            {
-                connection.Open();
-
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        people.Add(new Person
-                        {
-                            Id = reader.GetInt32(0),
-                            LastName = reader.GetString(1),
-                            FirstName = reader.GetString(2),
-                            DateOfBirth = reader.GetDateTime(3),
-                            Sex = reader.GetBoolean(4),
-                            Street = reader.GetString(5),
-                            House = reader.GetInt32(6),
-                            Flat = reader.GetInt32(7),
-                            Class = reader.GetString(8),
-                            UGroup = reader.GetString(9),
-                            Hobby = reader.GetString(10),
-                            EyeColor = reader.GetString(11)
-                        });
-                    }
-                }
-            }
-
-            return people;
         }
     }
 }
